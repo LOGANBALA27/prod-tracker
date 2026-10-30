@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useAppData, useModuleData } from '../../data/DataContext'
 import { Button, Card, PageHeader } from '../../components/ui'
-import { exportData, importData } from '../../storage/storage'
+import { exportData, importData, storageName } from '../../storage/storage'
 
 const defaults = { theme: 'dark' }
 
@@ -52,7 +52,7 @@ export default function Settings() {
       <Card>
         <h3 className="font-medium">Your data</h3>
         <p className="mb-3 text-sm text-zinc-500">
-          Data is saved in this browser only. Export a backup now and then.
+          Saved to: {storageName}. Export a backup now and then.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => exportData(data)}>Export backup</Button>
