@@ -81,7 +81,7 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
-        <main className={`mx-auto w-full flex-1 p-4 pb-28 ${wide ? 'md:px-10 md:py-4' : 'max-w-3xl md:p-10'}`}>{children}</main>
+        <main className={`w-full flex-1 p-4 pb-28 md:px-10 md:py-4 ${wide ? 'md:px-10 md:py-4' : 'md:p-10'}`}>{children}</main>
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 flex border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-zinc-800 dark:bg-zinc-900">
