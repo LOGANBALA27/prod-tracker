@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Header from './Header'
 
 const STORAGE_KEY = 'prod-tracker:sidebar-collapsed'
 
@@ -24,7 +25,7 @@ function NavButton({ item, active, onClick, mobile, collapsed }) {
   )
 }
 
-export default function Layout({ items, active, onNavigate, children }) {
+export default function Layout({ items, active, onNavigate, wide, children }) {
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEY) === '1'
@@ -78,7 +79,10 @@ export default function Layout({ items, active, onNavigate, children }) {
         </nav>
       </aside>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 p-4 pb-28 md:p-10">{children}</main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Header />
+        <main className={`mx-auto w-full flex-1 p-4 pb-28 ${wide ? 'md:px-10 md:py-4' : 'max-w-3xl md:p-10'}`}>{children}</main>
+      </div>
 
       <nav className="fixed inset-x-0 bottom-0 flex border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-zinc-800 dark:bg-zinc-900">
         {items.map((i) => (

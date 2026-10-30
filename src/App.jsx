@@ -21,11 +21,12 @@ function Shell() {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
 
-  const Active = modules.find((m) => m.id === active).component
+  const current = modules.find((m) => m.id === active)
+  const Active = current.component
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <Layout items={modules} active={active} onNavigate={setActive}>
+      <Layout items={modules} active={active} onNavigate={setActive} wide={current.wide}>
         <Active />
       </Layout>
     </div>
