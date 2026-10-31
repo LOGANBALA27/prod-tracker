@@ -25,6 +25,11 @@ const ACTIONS =
   'md:absolute md:right-2 md:top-2 md:mt-0 md:opacity-0 ' +
   'md:group-hover:opacity-100 md:group-focus-within:opacity-100'
 
+  const plain = (html) =>
+  new DOMParser()
+    .parseFromString(html.replace(/<\/(p|li|h\d)>/g, ' '), 'text/html')
+    .body.textContent.trim()
+
 export default function TaskCard({ task, status, today, tags, dropLine, onMove, onEdit, onRemove, onCreateTag }) {
   const [open, setOpen] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -39,6 +44,10 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
       <li
         data-task-id={task.id}
         draggable
+        role="button"
+        tabIndex={0}
+        onClick={() => setOpen(true)}
+        onKeyDown={(e) => e.target === e.currentTarget && e.key === 'Enter' && setOpen(true)}
         onDragStart={(e) => {
           e.dataTransfer.setData('text/plain', task.id)
           e.dataTransfer.effectAllowed = 'move'
@@ -70,7 +79,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
 
         {task.description && (
           <p className="mt-1 line-clamp-2 whitespace-pre-line text-xs text-zinc-500">
-            {task.description}
+            {plain(task.description)}
           </p>
         )}
 

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Button } from '../../components/ui'
 import { COLUMNS, toggleId } from './constants'
 import TagSelect from './TagSelect'
+import RichEditor from './RichEditor'
 
 const FIELD =
   'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 ' +
@@ -87,18 +88,8 @@ export default function TaskDetail({ task, status, tags, onCreateTag, onSave, on
         />
 
         <div>
-          <label htmlFor="task-desc" className="mb-1 block text-xs font-medium text-zinc-500">
-            Description
-          </label>
-          <textarea
-            id="task-desc"
-            autoFocus
-            rows={7}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Add more details, links, notes…"
-            className={`${FIELD} resize-y`}
-          />
+            <p className="mb-1 text-xs font-medium text-zinc-500">Description</p>
+            <RichEditor value={description} onChange={setDescription} />
         </div>
 
         <div>
