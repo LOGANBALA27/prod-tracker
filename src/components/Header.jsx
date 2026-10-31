@@ -4,7 +4,7 @@ const themeDefaults = { theme: 'dark' }
 
 export default function Header() {
   const [settings, update] = useModuleData('settings', themeDefaults)
-  const { drive } = useAppData()
+  const { drive, connectDrive } = useAppData()
   const dark = settings.theme === 'dark'
   const storageName = drive.connected ? 'Google Drive' : 'This device'
 
@@ -21,12 +21,18 @@ export default function Header() {
 
       {/* Right side: add future items here (sync status, avatar, etc.) */}
       <div className="flex items-center gap-2">
-        <span
-          className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-500 dark:border-zinc-700"
-          title="Where your data is saved"
-        >
-          Saved: {storageName}
-        </span>
+        <button
+            type="button"
+            onClick={drive.connected ? undefined : connectDrive}
+            title={drive.connected ? 'Synced to Google Drive' : 'Tap to connect Google Drive'}
+            className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-500 dark:border-zinc-700"
+          >
+            {drive.connected
+              ? '☁️ Google Drive'
+              : drive.wasConnected
+                ? '☁️ Reconnect Drive'
+                : '☁️ Connect Drive'}
+          </button>
         <button
           onClick={() => update((prev) => ({ ...prev, theme: dark ? 'light' : 'dark' }))}
           aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
