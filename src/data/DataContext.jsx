@@ -15,23 +15,16 @@ export function DataProvider({ children }) {
   const [drive, setDrive] = useState({ connected: false, error: null })
   const dataRef = useRef(null)
 
-  useEffect(() => {
-    loadData().then(setData)
-  }, [])
-
-  useEffect(() => {
-    dataRef.current = data
-    if (data) saveData(data)
-  }, [data])
-
-  const connectDrive = useCallback(async () => {
+  const connectDrive = useCallback(async (silent = false) => {
     try {
-      const next = await connect(dataRef.current)
+      const next = await connect(dataRef.current, silent === true)
       setData(next)
       setDrive({ connected: true, error: null })
     } catch (error) {
       console.error(error)
-      setDrive({ connected: false, error: 'Could not connect to Google Drive.' })
+      if (silent !== true) {
+        setDrive({ connected: false, error: 'Could not connect to Google Drive.' })
+      }
     }
   }, [])
 
@@ -39,6 +32,19 @@ export function DataProvider({ children }) {
     disconnect()
     setDrive({ connected: false, error: null })
   }, [])
+
+  useEffect(() => {
+    loadData().then((d) => {
+      setData(d)
+      dataRef.current = d
+      if (driveWasConnected()) connectDrive(true)
+    })
+  }, [connectDrive])
+
+  useEffect(() => {
+    dataRef.current = data
+    if (data) saveData(data)
+  }, [data])
 
   if (!data) return <p className="p-6 text-sm text-zinc-500">Loading…</p>
   return (

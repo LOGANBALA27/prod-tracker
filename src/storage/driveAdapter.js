@@ -9,13 +9,15 @@ let token = null // { value, expires }
 let fileId = null
 
 // Call from a button click so the popup isn't blocked
-export function signIn() {
+export function signIn(silent = false) {
   if (!CLIENT_ID) return Promise.reject(new Error('Missing VITE_GOOGLE_CLIENT_ID'))
+  if (typeof google === 'undefined') return Promise.reject(new Error('Google script not loaded'))
   return new Promise((resolve, reject) => {
     tokenClient ??= google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPE,
       callback: () => {},
+      error_callback: () => {},
     })
     tokenClient.callback = (res) => {
       if (res.error) return reject(new Error(res.error))
@@ -25,7 +27,8 @@ export function signIn() {
       }
       resolve()
     }
-    tokenClient.requestAccessToken({ prompt: '' })
+    tokenClient.error_callback = (err) => reject(new Error(err?.type || 'popup_error'))
+    tokenClient.requestAccessToken({ prompt: silent ? 'none' : '' })
   })
 }
 

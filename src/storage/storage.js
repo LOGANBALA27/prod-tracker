@@ -65,13 +65,13 @@ export async function saveData(data) {
 }
 
 // Must be called from a click. Returns the data the app should use.
-export async function connectDrive(currentData) {
-  await signIn()
+export async function connectDrive(currentData, silent = false) {
+  await signIn(silent)
   const remote = await driveAdapter.load()
   driveOn = true
   setFlag(true)
-  if (remote) return remote // Drive already has data: use it
-  await driveAdapter.save(currentData) // first time: upload local data
+  if (remote) return remote
+  await driveAdapter.save(currentData)
   return currentData
 }
 
