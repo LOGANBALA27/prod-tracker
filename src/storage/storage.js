@@ -1,25 +1,28 @@
 import { localAdapter } from './localStorageAdapter'
-import { driveAdapter } from './driveAdapter'
+import { driveAdapter, signIn } from './driveAdapter'
 
-// Register adapters here. To add another one later, add one line.
-const adapters = {
-  local: localAdapter,
-  drive: driveAdapter,
-}
+const DRIVE_FLAG = 'prod-tracker:drive'
+const DRIVE_DELAY = 1500 // ms to wait after the last change before uploading
 
-// Chosen by VITE_STORAGE in the .env files. Falls back to local if unavailable.
-function pickAdapter() {
-  const wanted = import.meta.env.VITE_STORAGE || 'local'
-  const adapter = adapters[wanted]
-  if (!adapter) {
-    console.warn(`Storage "${wanted}" is not available yet. Using local storage.`)
-    return localAdapter
+let driveOn = false
+let timer = null
+
+export const driveWasConnected = () => {
+  try {
+    return localStorage.getItem(DRIVE_FLAG) === '1'
+  } catch {
+    return false
   }
-  return adapter
 }
 
-const adapter = pickAdapter()
-export const storageName = adapter.name
+function setFlag(on) {
+  try {
+    if (on) localStorage.setItem(DRIVE_FLAG, '1')
+    else localStorage.removeItem(DRIVE_FLAG)
+  } catch {
+    /* ignore */
+  }
+}
 
 // First run only: start from the sample data in public/data.json
 async function loadSample() {
@@ -32,22 +35,50 @@ async function loadSample() {
   return {}
 }
 
+// Always starts from local data (no popup needed)
 export async function loadData() {
   try {
-    const saved = await adapter.load()
+    const saved = await localAdapter.load()
     if (saved) return saved
   } catch (error) {
-    console.error(`Could not load from ${adapter.name}:`, error)
+    console.error('Could not load from local storage:', error)
   }
   return loadSample()
 }
 
 export async function saveData(data) {
   try {
-    await adapter.save(data)
+    await localAdapter.save(data) // instant, always
   } catch (error) {
-    console.error(`Could not save to ${adapter.name}:`, error)
+    console.error('Could not save to local storage:', error)
   }
+
+  if (!driveOn) return
+  clearTimeout(timer)
+  timer = setTimeout(async () => {
+    try {
+      await driveAdapter.save(data)
+    } catch (error) {
+      console.error('Could not save to Drive:', error)
+    }
+  }, DRIVE_DELAY)
+}
+
+// Must be called from a click. Returns the data the app should use.
+export async function connectDrive(currentData) {
+  await signIn()
+  const remote = await driveAdapter.load()
+  driveOn = true
+  setFlag(true)
+  if (remote) return remote // Drive already has data: use it
+  await driveAdapter.save(currentData) // first time: upload local data
+  return currentData
+}
+
+export function disconnectDrive() {
+  clearTimeout(timer)
+  driveOn = false
+  setFlag(false)
 }
 
 export function exportData(data) {

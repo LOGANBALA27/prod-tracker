@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import { useAppData, useModuleData } from '../../data/DataContext'
 import { Button, Card, PageHeader } from '../../components/ui'
-import { exportData, importData, storageName } from '../../storage/storage'
+import { exportData, importData } from '../../storage/storage'
 
 const defaults = { theme: 'dark' }
 
 export default function Settings() {
-  const { data, setData } = useAppData()
+  const { data, setData, drive } = useAppData()
+  const storageName = drive.connected ? 'Google Drive (and this device)' : 'This device'
   const [settings, update] = useModuleData('settings', defaults)
   const [message, setMessage] = useState('')
   const fileRef = useRef(null)
@@ -24,11 +25,12 @@ export default function Settings() {
   }
 
   const reset = () => {
-    if (window.confirm('Delete all your data from this browser? Export a backup first.')) {
-      setData({})
-      setMessage('All data cleared.')
-    }
+  const where = drive.connected ? 'this device and Google Drive' : 'this browser'
+  if (window.confirm(`Delete all your data from ${where}? Export a backup first.`)) {
+    setData({})
+    setMessage('All data cleared.')
   }
+}
 
   return (
     <>

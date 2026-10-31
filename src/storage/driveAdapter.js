@@ -1,21 +1,94 @@
-// Google Drive adapter: NOT IMPLEMENTED YET.
-// When it's ready, it must match localAdapter: { name, load(), save(data) }.
-//
-// Plan:
-//  1. Google Cloud: enable the Drive API and create a Web OAuth Client ID.
-//     Put the ID in .env.production as VITE_GOOGLE_CLIENT_ID (it isn't a secret).
-//  2. Load Google Identity Services and request the scope
-//     https://www.googleapis.com/auth/drive.file
-//  3. load(): look for the file "prod-tracker-data.json" via the Drive files API,
-//     download it, and return its JSON. Return null if the file doesn't exist.
-//  4. save(data): create the file if missing, otherwise update it.
-//  5. IMPORTANT: if load() fails (for example, not signed in), block saving.
-//     Otherwise the sample data could overwrite your real data in Drive.
-//
-// export const driveAdapter = {
-//   name: 'drive',
-//   async load() { /* ... */ },
-//   async save(data) { /* ... */ },
-// }
+import { config } from '../config'
 
-export const driveAdapter = null // replace with the object above when ready
+const SCOPE = 'https://www.googleapis.com/auth/drive.appdata'
+const CLIENT_ID = config.googleClientId
+const FILE_NAME = config.driveFileName
+
+let tokenClient = null
+let token = null // { value, expires }
+let fileId = null
+
+// Call from a button click so the popup isn't blocked
+export function signIn() {
+  if (!CLIENT_ID) return Promise.reject(new Error('Missing VITE_GOOGLE_CLIENT_ID'))
+  return new Promise((resolve, reject) => {
+    tokenClient ??= google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPE,
+      callback: () => {},
+    })
+    tokenClient.callback = (res) => {
+      if (res.error) return reject(new Error(res.error))
+      token = {
+        value: res.access_token,
+        expires: Date.now() + (res.expires_in - 60) * 1000,
+      }
+      resolve()
+    }
+    tokenClient.requestAccessToken({ prompt: '' })
+  })
+}
+
+async function api(url, options = {}) {
+  if (!token || token.expires < Date.now()) await signIn()
+  const res = await fetch(url, {
+    ...options,
+    headers: { Authorization: `Bearer ${token.value}`, ...options.headers },
+  })
+  if (!res.ok) throw new Error(`Drive error ${res.status}`)
+  return res
+}
+
+async function findFile() {
+  if (fileId) return fileId
+  const q = encodeURIComponent(`name='${FILE_NAME}'`)
+  const res = await api(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id)`
+  )
+  const { files } = await res.json()
+  fileId = files[0]?.id ?? null
+  return fileId
+}
+
+export const driveAdapter = {
+  name: 'drive',
+
+  async load() {
+    const id = await findFile()
+    if (!id) return null
+    const res = await api(
+      `https://www.googleapis.com/drive/v3/files/${id}?alt=media`
+    )
+    return res.json()
+  },
+
+  async save(data) {
+    const id = await findFile()
+    if (id) {
+      await api(
+        `https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        }
+      )
+      return
+    }
+    const boundary = 'b' + Math.random().toString(36).slice(2)
+    const meta = { name: FILE_NAME, parents: ['appDataFolder'] }
+    const body =
+      `--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(meta)}\r\n` +
+      `--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(data)}\r\n` +
+      `--${boundary}--`
+    const res = await api(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body,
+      }
+    )
+    fileId = (await res.json()).id
+  },
+}

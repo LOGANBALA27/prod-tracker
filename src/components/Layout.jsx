@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Header from './Header'
+import { useAppData } from '../data/DataContext'
 
 const STORAGE_KEY = 'prod-tracker:sidebar-collapsed'
 
@@ -34,6 +35,8 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
     }
   })
 
+  const { drive, connectDrive, disconnectDrive } = useAppData()
+
   const toggle = () => {
     const next = !collapsed
     setCollapsed(next)
@@ -47,7 +50,7 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
   const top = items.filter((i) => !i.bottom)
   const bottom = items.filter((i) => i.bottom)
 
-  return (
+    return (
     <div className="min-h-screen md:flex">
       <aside
         className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-zinc-200 p-3 transition-[width] duration-200 md:flex dark:border-zinc-800 ${
@@ -77,6 +80,32 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
             ))}
           </div>
         </nav>
+
+        {/* Google Drive button: new block */}
+        <div className="border-t border-zinc-200 pt-3 text-xs dark:border-zinc-800">
+          {drive.connected ? (
+            <button
+              onClick={disconnectDrive}
+              title="Drive synced. Click to disconnect"
+              className={`w-full rounded-lg py-2 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
+                collapsed ? 'text-center' : 'px-3 text-left'
+              }`}
+            >
+              {collapsed ? '☁️' : '☁️ Drive synced · Disconnect'}
+            </button>
+          ) : (
+            <button
+              onClick={connectDrive}
+              title={drive.wasConnected ? 'Reconnect Google Drive' : 'Connect Google Drive'}
+              className={`w-full rounded-lg py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${
+                collapsed ? 'text-center' : 'px-3 text-left'
+              }`}
+            >
+              {collapsed ? '☁️' : drive.wasConnected ? '☁️ Reconnect Google Drive' : '☁️ Connect Google Drive'}
+            </button>
+          )}
+          {drive.error && !collapsed && <p className="mt-1 px-3 text-red-500">{drive.error}</p>}
+        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

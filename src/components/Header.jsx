@@ -1,11 +1,12 @@
-import { useModuleData } from '../data/DataContext'
-import { storageName } from '../storage/storage'
+import { useAppData, useModuleData } from '../data/DataContext'
 
 const themeDefaults = { theme: 'dark' }
 
 export default function Header() {
   const [settings, update] = useModuleData('settings', themeDefaults)
+  const { drive } = useAppData()
   const dark = settings.theme === 'dark'
+  const storageName = drive.connected ? 'Google Drive' : 'This device'
 
   const date = new Date().toLocaleDateString(undefined, {
     weekday: 'long',
