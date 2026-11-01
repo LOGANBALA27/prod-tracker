@@ -37,7 +37,7 @@ export function DataProvider({ children }) {
     loadData().then((d) => {
       setData(d)
       dataRef.current = d
-      if (driveWasConnected()) connectDrive(true)
+      if (driveWasConnected() && window.matchMedia('(pointer: fine)').matches) connectDrive(true)
     })
   }, [connectDrive])
 
