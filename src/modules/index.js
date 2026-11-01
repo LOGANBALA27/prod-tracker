@@ -6,11 +6,13 @@ import Reflect from './reflect/Reflect'
 import Settings from './settings/Settings'
 import Tasks from './tasks/Tasks'
 import Reminders from './reminders/Reminders'
+import Habits from './habits/Habits'
 
 // inside the modules array:
 
 export const modules = [
   { id: 'tasks', label: 'Tasks', icon: '✅', component: Tasks, wide: true },
+  { id: 'habits', label: 'Habits', icon: '🔥', component: Habits },
   { id: 'reminders', label: 'Reminders', icon: '📌', component: Reminders },
   { id: 'today', label: 'Today', icon: '☀️', component: Today },
   { id: 'goals', label: 'Goals', icon: '🎯', component: Goals },
