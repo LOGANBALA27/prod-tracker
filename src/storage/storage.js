@@ -64,21 +64,35 @@ export async function saveData(data) {
   }, DRIVE_DELAY)
 }
 
-// Must be called from a click. Returns the data the app should use.
-export async function connectDrive(currentData, silent = false) {
-  await signIn(silent)
+// Must be called from a click. `getData` returns the latest app data.
+// Keeps whichever copy (this device or Drive) was changed most recently.
+export async function connectDrive(getData) {
+  await signIn()
   const remote = await driveAdapter.load()
+  const local = getData() // read after sign-in, so edits made meanwhile are kept
   driveOn = true
   setFlag(true)
-  if (remote) return remote
-  await driveAdapter.save(currentData)
-  return currentData
+
+  if (!remote) {
+    await driveAdapter.save(local)
+    return local
+  }
+  if ((local?.updatedAt ?? 0) > (remote.updatedAt ?? 0)) {
+    await driveAdapter.save(local)
+    return local
+  }
+  return remote
 }
 
 export function disconnectDrive() {
   clearTimeout(timer)
   driveOn = false
   setFlag(false)
+  try {
+    localStorage.removeItem('prod-tracker:drive-email')
+  } catch {
+    /* ignore */
+  }
 }
 
 export function exportData(data) {

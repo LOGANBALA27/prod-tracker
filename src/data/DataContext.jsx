@@ -11,20 +11,43 @@ const DataContext = createContext(null)
 
 // Holds ALL app data in one object. Each module owns one key, e.g. data.goals
 export function DataProvider({ children }) {
-  const [data, setData] = useState(null)
+  const [data, setRawData] = useState(null)
   const [drive, setDrive] = useState({ connected: false, error: null })
   const dataRef = useRef(null)
 
-  const connectDrive = useCallback(async (silent = false) => {
+  // Every change made by the user is stamped, so Drive and this device
+  // can tell which copy is newer.
+  const setData = useCallback((next) => {
+    setRawData((prev) => {
+      const value = typeof next === 'function' ? next(prev) : next
+      return { ...value, updatedAt: Date.now() }
+    })
+  }, [])
+
+  const warned = useRef(false)
+  const startStamp = useRef(undefined)
+
+  useEffect(() => {
+    if (!data) return
+    if (startStamp.current === undefined) {
+      startStamp.current = data.updatedAt ?? 0 // first render: remember what was loaded
+      return
+    }
+    if (warned.current || drive.connected || !driveWasConnected()) return
+    if ((data.updatedAt ?? 0) !== startStamp.current) {
+      warned.current = true
+      setDrive((d) => ({ ...d, error: 'Not synced to Google Drive. Tap Reconnect Drive.' }))
+    }
+  }, [data, drive.connected])
+
+  const connectDrive = useCallback(async () => {
     try {
-      const next = await connect(dataRef.current, silent === true)
-      setData(next)
+      const next = await connect(() => dataRef.current)
+      setRawData(next) // not stamped: this is a sync, not a user edit
       setDrive({ connected: true, error: null })
     } catch (error) {
       console.error(error)
-      if (silent !== true) {
-        setDrive({ connected: false, error: 'Could not connect to Google Drive.' })
-      }
+      setDrive({ connected: false, error: 'Could not connect to Google Drive.' })
     }
   }, [])
 
@@ -35,11 +58,10 @@ export function DataProvider({ children }) {
 
   useEffect(() => {
     loadData().then((d) => {
-      setData(d)
       dataRef.current = d
-      if (driveWasConnected() && window.matchMedia('(pointer: fine)').matches) connectDrive(true)
+      setRawData(d)
     })
-  }, [connectDrive])
+  }, [])
 
   useEffect(() => {
     dataRef.current = data

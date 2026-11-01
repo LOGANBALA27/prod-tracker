@@ -22,11 +22,15 @@ export default function Header() {
       {/* Right side: add future items here (sync status, avatar, etc.) */}
       <div className="flex items-center gap-2">
         <button
-            type="button"
-            onClick={drive.connected ? undefined : connectDrive}
-            title={drive.connected ? 'Synced to Google Drive' : 'Tap to connect Google Drive'}
-            className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-500 dark:border-zinc-700"
-          >
+          type="button"
+          onClick={drive.connected ? undefined : connectDrive}
+          title={drive.connected ? 'Synced to Google Drive' : 'Tap to connect Google Drive'}
+          className={`rounded-full border px-2.5 py-1 text-xs ${
+            drive.connected
+              ? 'border-zinc-200 text-zinc-500 dark:border-zinc-700'
+              : 'border-amber-400 bg-amber-50 text-amber-700 dark:border-amber-500/60 dark:bg-amber-500/10 dark:text-amber-400'
+          }`}
+        >
             {drive.connected
               ? '☁️ Google Drive'
               : drive.wasConnected

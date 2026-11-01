@@ -1,6 +1,7 @@
 import { config } from '../config'
 
-const SCOPE = 'https://www.googleapis.com/auth/drive.appdata'
+const SCOPE = 'https://www.googleapis.com/auth/drive.appdata email'
+const HINT_KEY = 'prod-tracker:drive-email'
 const CLIENT_ID = config.googleClientId
 const FILE_NAME = config.driveFileName
 
@@ -8,8 +9,28 @@ let tokenClient = null
 let token = null // { value, expires }
 let fileId = null
 
-// Call from a button click so the popup isn't blocked
+function getHint() {
+  try {
+    return localStorage.getItem(HINT_KEY) || undefined
+  } catch {
+    return undefined
+  }
+}
+
+function rememberEmail(accessToken) {
+  fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+    .then((r) => r.json())
+    .then((u) => {
+      if (u.email) localStorage.setItem(HINT_KEY, u.email)
+    })
+    .catch(() => {})
+}
+
+// Popup sign-in. Call from a button click so the popup isn't blocked.
 export function signIn(silent = false) {
+  if (token && token.expires > Date.now()) return Promise.resolve()
   if (!CLIENT_ID) return Promise.reject(new Error('Missing VITE_GOOGLE_CLIENT_ID'))
   if (typeof google === 'undefined') return Promise.reject(new Error('Google script not loaded'))
   return new Promise((resolve, reject) => {
@@ -25,15 +46,16 @@ export function signIn(silent = false) {
         value: res.access_token,
         expires: Date.now() + (res.expires_in - 60) * 1000,
       }
+      rememberEmail(res.access_token)
       resolve()
     }
     tokenClient.error_callback = (err) => reject(new Error(err?.type || 'popup_error'))
-    tokenClient.requestAccessToken({ prompt: silent ? 'none' : '' })
+    tokenClient.requestAccessToken({ prompt: silent ? 'none' : '', hint: getHint() })
   })
 }
 
 async function api(url, options = {}) {
-  if (!token || token.expires < Date.now()) await signIn()
+  if (!token || token.expires < Date.now()) await signIn(true)
   const res = await fetch(url, {
     ...options,
     headers: { Authorization: `Bearer ${token.value}`, ...options.headers },
@@ -59,23 +81,18 @@ export const driveAdapter = {
   async load() {
     const id = await findFile()
     if (!id) return null
-    const res = await api(
-      `https://www.googleapis.com/drive/v3/files/${id}?alt=media`
-    )
+    const res = await api(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`)
     return res.json()
   },
 
   async save(data) {
     const id = await findFile()
     if (id) {
-      await api(
-        `https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        }
-      )
+      await api(`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=media`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
       return
     }
     const boundary = 'b' + Math.random().toString(36).slice(2)
