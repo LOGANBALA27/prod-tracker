@@ -3,7 +3,7 @@ import { Button, PageHeader } from '../../components/ui'
 import TagFilter from '../tasks/TagFilter'
 import ReminderCard from './ReminderCard'
 import ReminderForm from './ReminderForm'
-import { useReminders } from './usereminders'
+import { useReminders } from './useReminders'
 
 export default function Reminders() {
   const {
