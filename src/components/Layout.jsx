@@ -50,8 +50,8 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
   const top = items.filter((i) => !i.bottom)
   const bottom = items.filter((i) => i.bottom)
 
-    return (
-    <div className="min-h-screen md:flex">
+  return (
+    <div className="min-h-dvh md:flex">
       <aside
         className={`sticky top-0 hidden h-screen shrink-0 flex-col border-r border-zinc-200 p-3 transition-[width] duration-200 md:flex dark:border-zinc-800 ${
           collapsed ? 'w-16' : 'w-56'
@@ -81,7 +81,7 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
           </div>
         </nav>
 
-        {/* Google Drive button: new block */}
+        {/* Google Drive button */}
         <div className="border-t border-zinc-200 pt-3 text-xs dark:border-zinc-800">
           {drive.connected ? (
             <button
@@ -110,7 +110,9 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
-        <main className={`w-full flex-1 p-4 pb-28 md:px-10 md:py-4 ${wide ? 'md:px-10 md:py-4' : 'md:p-10'}`}>{children}</main>
+        <main className={`w-full flex-1 p-4 pb-28 md:px-10 md:py-4 ${wide ? 'md:px-10 md:py-4' : 'md:p-10'}`}>
+          {children}
+        </main>
       </div>
 
       <nav className="fixed inset-x-0 bottom-0 flex border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-zinc-800 dark:bg-zinc-900">
