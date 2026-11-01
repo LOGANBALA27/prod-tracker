@@ -115,7 +115,7 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 flex border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden dark:border-zinc-800 dark:bg-zinc-900">
+      <nav className="fixed inset-x-0 bottom-0 flex border-t border-zinc-200 bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900">
         {items.map((i) => (
           <NavButton key={i.id} item={i} mobile active={i.id === active} onClick={() => onNavigate(i.id)} />
         ))}
