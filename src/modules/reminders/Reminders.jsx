@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { Button, PageHeader } from '../../components/ui'
+import { Button, Input, PageHeader } from '../../components/ui'
 import TagFilter from '../tasks/TagFilter'
 import ReminderCard from './ReminderCard'
 import ReminderForm from './ReminderForm'
 import { useReminders } from './useReminders'
+import { plainText } from '../../lib/text'
 
 export default function Reminders() {
   const {
-    items, shown, tags, activeTags,
+    items, shown, query, setQuery, tags, activeTags,
     createTag, deleteTag, toggleFilter, clearFilter,
     addReminder, editReminder, togglePin, removeReminder,
   } = useReminders()
@@ -17,6 +18,26 @@ export default function Reminders() {
   return (
     <>
       <PageHeader title="Reminders" />
+
+      <div className="relative mb-3">
+  <Input
+    type="search"
+    value={query}
+    onChange={(e) => setQuery(e.target.value)}
+    placeholder="Search reminders…"
+    aria-label="Search reminders"
+  />
+  {query && (
+    <button
+      type="button"
+      onClick={() => setQuery('')}
+      aria-label="Clear search"
+      className="absolute right-2 top-1/2 -translate-y-1/2 rounded px-1.5 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+    >
+      ✕
+    </button>
+  )}
+</div>
 
       <TagFilter
         tags={tags}
@@ -50,7 +71,7 @@ export default function Reminders() {
         <p className="text-sm text-zinc-500">No reminders yet. Add things you want to see often.</p>
       )}
       {items.length > 0 && shown.length === 0 && (
-        <p className="text-sm text-zinc-500">No reminders with these tags.</p>
+        <p className="text-sm text-zinc-500">No reminders match your search or tags.</p>
       )}
 
       <ul className="space-y-2">

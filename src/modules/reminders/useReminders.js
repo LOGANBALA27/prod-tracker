@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useModuleData } from '../../data/DataContext'
+import { plainText } from '../../lib/text'
 import { useTasks } from '../tasks/useTasks'
 import { toggleId } from '../tasks/constants'
 
@@ -11,17 +12,28 @@ export function useReminders() {
   const [state, update] = useModuleData('reminders', defaults)
   const { tags, createTag, deleteTag } = useTasks()
   const [activeTags, setActiveTags] = useState([])
+  const [query, setQuery] = useState('')
 
   const items = state.items ?? []
   const setItems = (fn) => update((prev) => ({ ...prev, items: fn(prev.items ?? []) }))
 
   const shown = useMemo(() => {
-    const filtered = activeTags.length
-      ? items.filter((r) => (r.tagIds ?? []).some((id) => activeTags.includes(id)))
-      : items
+    const needle = query.trim().toLowerCase()
+    const nameOf = (id) => tags.find((t) => t.id === id)?.name ?? ''
+
+    const filtered = items.filter((r) => {
+      const ids = r.tagIds ?? []
+      if (activeTags.length && !ids.some((id) => activeTags.includes(id))) return false
+      if (!needle) return true
+      const haystack = [r.text, plainText(r.description), ...ids.map(nameOf)]
+        .join(' ')
+        .toLowerCase()
+      return haystack.includes(needle)
+    })
+
     // Pinned first; otherwise keeps the order they were added
-    return [...filtered].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned))
-  }, [items, activeTags])
+    return filtered.sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned))
+  }, [items, activeTags, query, tags])
 
   const addReminder = ({ text, description, tagIds }) =>
     setItems((list) => [
@@ -40,6 +52,8 @@ export function useReminders() {
   return {
     items,
     shown,
+    query,
+    setQuery,
     tags,
     activeTags,
     createTag,
