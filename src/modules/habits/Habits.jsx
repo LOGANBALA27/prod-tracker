@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, Input, PageHeader } from '../../components/ui'
 import { todayKey } from '../../lib/utils'
-import HabitCard from './HabitCard'
+import HabitCard from "./HabitCard";
 import { useHabits } from './useHabits'
 
 export default function Habits() {
