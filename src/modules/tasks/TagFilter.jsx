@@ -22,7 +22,7 @@ export default function TagFilter({ tags, active, onToggle, onClear, onCreate, o
   return (
     <div className="mb-4 space-y-2">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 text-sm text-zinc-500">Filter by tag</span>
+        {/* <span className="mr-1 text-sm text-zinc-500">Filter by tag</span> */}
 
         {tags.map((t) => (
           <TagChip

@@ -55,23 +55,23 @@ export default function TaskColumn({ column, tasks, tags, today, actions }) {
   }
 
   return (
-    <section
-      aria-label={column.label}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      className={`min-h-40 w-[85vw] max-w-80 shrink-0 rounded-xl p-3 transition md:w-auto md:max-w-none ${
-        isOver
-          ? 'bg-accent/10 outline-2 outline-dashed outline-accent'
-          : 'bg-zinc-100 dark:bg-zinc-900/60'
-      }`}
-    >
+      <section
+        aria-label={column.label}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`flex max-h-[calc(100vh-14rem)] min-h-40 w-[85vw] max-w-80 shrink-0 flex-col rounded-xl p-3 transition md:w-auto md:max-w-none ${
+          isOver
+            ? 'bg-accent/10 outline-2 outline-dashed outline-accent'
+            : 'bg-zinc-100 dark:bg-zinc-900/60'
+        }`}
+      >
       <h3 className="mb-3 flex items-center justify-between text-sm font-medium">
         {column.label}
         <span className="text-zinc-500">{tasks.length}</span>
       </h3>
 
-      <ul ref={listRef} className="space-y-2">
+      <ul ref={listRef} className="min-h-0 flex-1 space-y-2 overflow-y-auto px-0.5 py-1.5 pr-1">
         {tasks.map((t, i) => (
           <TaskCard
             key={t.id}

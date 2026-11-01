@@ -33,7 +33,7 @@ export default function TaskList({ tasksIn, tags, today, actions }) {
 
             {!isClosed && (
               <>
-                <ul className="mt-3 space-y-2">
+                <ul className={`mt-3 space-y-2 overflow-y-auto px-0.5 py-1.5 pr-1 ${col.id === LAST ? 'max-h-[40vh]' : 'max-h-[60vh]'}`}>
                   {tasks.map((t) => (
                     <TaskCard
                       key={t.id}
