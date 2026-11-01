@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '../../components/ui'
 import { COLUMNS, toggleId } from './constants'
-import TagSelect from './TagSelect'
+import PrioritySelect from './PrioritySelect'
 import RichEditor from './RichEditor'
+import TagSelect from './TagSelect'
 
 const FIELD =
   'w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900 ' +
@@ -15,11 +16,13 @@ export default function TaskDetail({ task, status, tags, onCreateTag, onSave, on
   const [due, setDue] = useState(task.due ?? '')
   const [tagIds, setTagIds] = useState(task.tagIds ?? [])
   const [description, setDescription] = useState(task.description ?? '')
+  const [priority, setPriority] = useState(task.priority ?? '')
 
   const dirty =
     text !== task.text ||
     (due || null) !== (task.due ?? null) ||
     description !== (task.description ?? '') ||
+    priority !== (task.priority ?? '') ||
     JSON.stringify(tagIds) !== JSON.stringify(task.tagIds ?? [])
 
   const requestClose = () => {
@@ -31,7 +34,13 @@ export default function TaskDetail({ task, status, tags, onCreateTag, onSave, on
     e?.preventDefault()
     const value = text.trim()
     if (!value) return
-    onSave({ text: value, due: due || null, tagIds, description: description.trim() })
+    onSave({
+      text: value,
+      due: due || null,
+      tagIds,
+      description: description.trim(),
+      priority: priority || undefined,
+    })
   }
 
   // Stop the page behind the dialog from scrolling.
@@ -88,8 +97,13 @@ export default function TaskDetail({ task, status, tags, onCreateTag, onSave, on
         />
 
         <div>
-            <p className="mb-1 text-xs font-medium text-zinc-500">Description</p>
-            <RichEditor value={description} onChange={setDescription} />
+          <p className="mb-1 text-xs font-medium text-zinc-500">Description</p>
+          <RichEditor value={description} onChange={setDescription} />
+        </div>
+
+        <div>
+          <p className="mb-1 text-xs font-medium text-zinc-500">Priority</p>
+          <PrioritySelect value={priority} onChange={setPriority} />
         </div>
 
         <div>

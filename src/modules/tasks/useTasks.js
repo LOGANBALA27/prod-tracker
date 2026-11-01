@@ -10,19 +10,21 @@ const defaults = { items: [], tags: [] }
 export function useTasks() {
   const [data, update] = useModuleData('tasks', defaults)
   const [activeTags, setActiveTags] = useState([])
+  const [activePriorities, setActivePriorities] = useState([])
 
   const items = data.items
   const tags = data.tags ?? [] // older saved data has no tags list yet
 
   /* ----- tasks ----- */
 
-  const addTask = (status, text, due, tagIds) =>
+  // priority is 'high' | 'medium' | 'low', or undefined for none
+  const addTask = (status, text, due, tagIds, priority) =>
     update((prev) => ({
       ...prev,
-      items: [...prev.items, { id: uid(), text, status, due, tagIds }],
+      items: [...prev.items, { id: uid(), text, status, due, tagIds, priority }],
     }))
 
-  // changes: any of { text, due, tagIds }
+  // changes: any of { text, due, tagIds, priority }
   const editTask = (id, changes) =>
     update((prev) => ({
       ...prev,
@@ -67,15 +69,24 @@ export function useTasks() {
     setActiveTags((prev) => prev.filter((id) => id !== tagId))
   }
 
-  /* ----- filter ----- */
+  /* ----- filters ----- */
 
   const toggleFilter = (tagId) => setActiveTags((prev) => toggleId(prev, tagId))
-
   const clearFilter = () => setActiveTags([])
 
-  // With a filter on, a task shows if it has any of the selected tags.
-  const matchesFilter = (t) =>
+  const togglePriority = (id) => setActivePriorities((prev) => toggleId(prev, id))
+  const clearPriorities = () => setActivePriorities([])
+
+  // With a tag filter on, a task shows if it has any of the selected tags.
+  const matchesTags = (t) =>
     activeTags.length === 0 || (t.tagIds ?? []).some((id) => activeTags.includes(id))
+
+  // With a priority filter on, a task shows if its priority is one of the selected.
+  const matchesPriority = (t) =>
+    activePriorities.length === 0 || activePriorities.includes(t.priority)
+
+  // Both filters must pass (tags AND priority).
+  const matchesFilter = (t) => matchesTags(t) && matchesPriority(t)
 
   const tasksIn = (columnId) => items.filter((t) => statusOf(t) === columnId && matchesFilter(t))
 
@@ -83,6 +94,7 @@ export function useTasks() {
     items,
     tags,
     activeTags,
+    activePriorities,
     openCount: items.filter((t) => statusOf(t) !== LAST).length,
     shownCount: items.filter(matchesFilter).length,
     tasksIn,
@@ -94,5 +106,7 @@ export function useTasks() {
     deleteTag,
     toggleFilter,
     clearFilter,
+    togglePriority,
+    clearPriorities,
   }
 }

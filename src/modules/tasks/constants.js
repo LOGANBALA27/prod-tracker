@@ -18,6 +18,30 @@ export const TAG_COLORS = [
   { id: 'pink', swatch: 'bg-pink-500', chip: 'bg-pink-100 text-pink-800 dark:bg-pink-500/20 dark:text-pink-300' },
 ]
 
+export const PRIORITIES = [
+  {
+    id: 'high',
+    label: 'High',
+    dot: 'bg-red-500',
+    chip: 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300',
+    active: 'bg-red-500 text-white',
+  },
+  {
+    id: 'medium',
+    label: 'Medium',
+    dot: 'bg-amber-500',
+    chip: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300',
+    active: 'bg-amber-500 text-white',
+  },
+  {
+    id: 'low',
+    label: 'Low',
+    dot: 'bg-sky-500',
+    chip: 'bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300',
+    active: 'bg-sky-500 text-white',
+  },
+]
+
 export const colorOf = (id) => TAG_COLORS.find((c) => c.id === id) ?? TAG_COLORS[0]
 
 // Older tasks used done: true/false, and tasks in a removed column

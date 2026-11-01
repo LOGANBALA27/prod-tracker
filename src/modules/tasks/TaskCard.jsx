@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../../components/ui'
 import { formatDate } from '../../lib/utils'
-import { COLUMNS, LAST } from './constants'
+import { COLUMNS, LAST, PRIORITIES } from './constants'
 import TagChip from './TagChip'
 import TaskDetail from './TaskDetail'
 
@@ -12,20 +12,14 @@ const DROP_LINE = {
   after: 'after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-[5px] after:h-0.5 after:rounded-full after:bg-accent',
 }
 
-// Move / details / remove buttons. Always visible on small screens;
+// Move / remove buttons. Always visible on small screens;
 // on larger screens they float over the card's corner on hover or keyboard focus.
-// const ACTIONS =
-//   'mt-2 flex items-center justify-between gap-1 transition-opacity ' +
-//   'md:absolute md:right-2 md:top-2 md:mt-0 md:rounded-md md:border md:border-zinc-200 md:bg-white md:p-0.5 md:shadow-sm md:opacity-0 ' +
-//   'md:group-hover:opacity-100 md:group-focus-within:opacity-100 ' +
-//   'dark:md:border-zinc-700 dark:md:bg-zinc-800'
-
 const ACTIONS =
   'mt-2 flex items-center justify-between gap-1 transition-opacity ' +
   'md:absolute md:right-2 md:top-2 md:mt-0 md:opacity-0 ' +
   'md:group-hover:opacity-100 md:group-focus-within:opacity-100'
 
-  const plain = (html) =>
+const plain = (html) =>
   new DOMParser()
     .parseFromString(html.replace(/<\/(p|li|h\d)>/g, ' '), 'text/html')
     .body.textContent.trim()
@@ -38,6 +32,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
   const overdue = task.due && task.due < today && status !== LAST
   const selectedIds = task.tagIds ?? []
   const taskTags = tags.filter((t) => selectedIds.includes(t.id))
+  const priority = PRIORITIES.find((p) => p.id === task.priority)
 
   return (
     <>
@@ -58,8 +53,13 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
           dragging ? 'opacity-40' : ''
         } ${dropLine ? DROP_LINE[dropLine] : ''}`}
       >
-        {taskTags.length > 0 && (
-          <div className="mb-1.5 flex flex-wrap gap-1">
+        {(priority || taskTags.length > 0) && (
+          <div className="mb-1.5 flex flex-wrap items-center gap-1">
+            {priority && (
+  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${priority.chip}`}>
+    {priority.label}
+  </span>
+)}
             {taskTags.map((t) => (
               <TagChip key={t.id} tag={t} />
             ))}
