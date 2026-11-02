@@ -4,6 +4,16 @@ import { removeIn, updateIn } from './missionTree'
 
 const defaults = { items: [] }
 
+// Turns parsed outline nodes into real missions with ids.
+const withIds = (nodes) =>
+  nodes.map((n) => ({
+    id: uid(),
+    text: n.text,
+    due: n.due || null,
+    done: false,
+    children: withIds(n.children ?? []),
+  }))
+
 // All target and mission logic lives here, so the components only draw things.
 export function useTargets() {
   const [state, update] = useModuleData('targets', defaults)
@@ -38,6 +48,18 @@ export function useTargets() {
       }))
     })
 
+  // parentId = null appends at the top level; otherwise under that mission.
+  const importMissions = (targetId, tree, parentId = null) =>
+    mapMissions(targetId, (ms) => {
+      const fresh = withIds(tree)
+      if (!parentId) return [...ms, ...fresh]
+      return updateIn(ms, parentId, (p) => ({
+        ...p,
+        done: false,
+        children: [...(p.children ?? []), ...fresh],
+      }))
+    })
+
   // Only missions without children are toggled directly.
   const toggleMission = (targetId, missionId) =>
     mapMissions(targetId, (ms) =>
@@ -57,6 +79,7 @@ export function useTargets() {
     editTarget,
     removeTarget,
     addMission,
+    importMissions,
     toggleMission,
     removeMission,
   }

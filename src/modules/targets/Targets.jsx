@@ -4,9 +4,17 @@ import TargetCard from './TargetCard'
 import { useTargets } from './useTargets'
 
 export default function Targets() {
-  const { items, addTarget, removeTarget, addMission, toggleMission, removeMission } = useTargets()
+  const {
+    items,
+    addTarget,
+    removeTarget,
+    addMission,
+    importMissions,
+    toggleMission,
+    removeMission,
+  } = useTargets()
   const today = todayKey()
-  const actions = { removeTarget, addMission, toggleMission, removeMission }
+  const actions = { removeTarget, addMission, importMissions, toggleMission, removeMission }
 
   return (
     <>

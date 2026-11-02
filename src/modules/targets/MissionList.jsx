@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button, Input } from '../../components/ui'
 import { formatDate } from '../../lib/utils'
+import BulkAdd from './BulkAdd'
 import { hasKids, isDone, leaves } from './missionTree'
 
 const INDENT = 24 // pixels added per level
@@ -135,7 +136,7 @@ function MissionItem({ mission, number, today, onAdd, onToggle, onRemove }) {
   )
 }
 
-export default function MissionList({ target, today, onAdd, onToggle, onRemove }) {
+export default function MissionList({ target, today, onAdd, onToggle, onRemove, onImport }) {
   const [text, setText] = useState('')
   const [due, setDue] = useState('')
 
@@ -182,6 +183,8 @@ export default function MissionList({ target, today, onAdd, onToggle, onRemove }
         />
         <Button type="submit" disabled={!text.trim()}>Add</Button>
       </form>
+
+      <BulkAdd onImport={onImport} />
     </div>
   )
 }

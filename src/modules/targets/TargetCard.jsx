@@ -150,6 +150,7 @@ export default function TargetCard({ target, today, actions }) {
       {open && (
         <MissionList
           target={target}
+          onImport={(tree) => actions.importMissions(target.id, tree)}
           today={today}
           onAdd={(text, due, parentId) => actions.addMission(target.id, text, due, parentId)}
           onToggle={toggle}
