@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Button, Input } from '../../components/ui'
-import { PRIORITIES, toggleId } from './constants'
+import { toggleId } from './constants'
 import TagSelect from './TagSelect'
 import PrioritySelect from './PrioritySelect'
 
 export default function AddTask({ tags, onCreateTag, onAdd }) {
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
+  // setDue is only used by reset() while the date input is commented out
   const [due, setDue] = useState('')
   const [tagIds, setTagIds] = useState([])
   const [priority, setPriority] = useState('')
@@ -30,7 +31,7 @@ export default function AddTask({ tags, onCreateTag, onAdd }) {
     const value = text.trim()
     if (!value) return
     onAdd(value, due || null, tagIds, priority || undefined)
-    reset()
+    close() // was reset(): closes the form after adding
   }
 
   if (!open) {
@@ -53,22 +54,24 @@ export default function AddTask({ tags, onCreateTag, onAdd }) {
         onChange={(e) => setText(e.target.value)}
         placeholder="Task name"
       />
+      {/* Date input temporarily disabled
       <Input
         type="date"
         value={due}
         onChange={(e) => setDue(e.target.value)}
         aria-label="Due date (optional)"
       />
+      */}
       <PrioritySelect value={priority} onChange={setPriority} />
-<TagSelect tags={tags} selected={tagIds} onToggle={toggleTag} onCreate={onCreateTag} />
-<div className="flex gap-2">
-  <Button type="submit" disabled={!text.trim()}>
-    Add task
-  </Button>
-  <Button type="button" variant="ghost" onClick={close}>
-    Cancel
-  </Button>
-</div>
+      <TagSelect tags={tags} selected={tagIds} onToggle={toggleTag} onCreate={onCreateTag} />
+      <div className="flex gap-2">
+        <Button type="submit" disabled={!text.trim()}>
+          Add task
+        </Button>
+        <Button type="button" variant="ghost" onClick={close}>
+          Cancel
+        </Button>
+      </div>
     </form>
   )
 }
