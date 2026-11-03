@@ -4,8 +4,10 @@ import { BlockNoteView } from '@blocknote/mantine'
 import '@blocknote/core/fonts/inter.css'
 import '@blocknote/mantine/style.css'
 import { useModuleData } from '../../data/DataContext'
+import { newCard, tablesToCards } from '../flashcards/cards'
 
 const DEFAULTS = { notes: [] } // keep stable, useModuleData depends on it
+const FLASH_DEFAULTS = { decks: [] }
 
 const parse = (s) => {
   try {
@@ -29,12 +31,15 @@ const EDITOR_CSS = `
 `
 
 // full = true: use the whole width (page list is hidden)
-function NoteEditor({ note, onPatch, full }) {
+function NoteEditor({ note, onPatch, full, onMakeDeck }) {
   const editor = useCreateBlockNote({ initialContent: parse(note.content) })
   const lastSaved = useRef(note.content)
   const timer = useRef(null)
   const patchRef = useRef(onPatch)
   patchRef.current = onPatch
+  const [msg, setMsg] = useState('')
+  const [importOpen, setImportOpen] = useState(false)
+  const [importText, setImportText] = useState('')
 
   const flush = () => {
     timer.current = null
@@ -68,6 +73,49 @@ function NoteEditor({ note, onPatch, full }) {
     if (blocks) editor.replaceBlocks(editor.document, blocks)
   }, [note.content, editor])
 
+  // Hide the status message after a few seconds
+  useEffect(() => {
+    if (!msg) return
+    const t = setTimeout(() => setMsg(''), 6000)
+    return () => clearTimeout(t)
+  }, [msg])
+
+  const handleMakeDeck = () => {
+    const found = tablesToCards(editor.document)
+    if (!found.length) {
+      setMsg('No table rows found. Add a table whose first row is headings.')
+      return
+    }
+    const { added, skipped } = onMakeDeck(note, found)
+    const name = note.title || 'Untitled'
+    setMsg(
+      added
+        ? `Added ${added} card${added === 1 ? '' : 's'} to the "${name}" deck.` +
+            (skipped ? ` (${skipped} already existed)` : '')
+        : 'No new cards. Every row is already in the deck.'
+    )
+  }
+
+    // Turns pasted markdown (headings, bullets, tables) into real blocks
+  const handleImport = async () => {
+    if (!importText.trim()) return
+    try {
+      const blocks = await editor.tryParseMarkdownToBlocks(importText)
+      const doc = editor.document
+      const last = doc[doc.length - 1]
+      const emptyPage =
+        doc.length === 1 && last.type === 'paragraph' && !(last.content?.length > 0)
+      if (emptyPage) editor.replaceBlocks([last], blocks)
+      else editor.insertBlocks(blocks, last, 'after')
+      setImportText('')
+      setImportOpen(false)
+      setMsg('Imported. Click Make flashcards when ready.')
+    } catch (e) {
+      console.error(e)
+      setMsg('Import failed. Check the console for details.')
+    }
+  }
+
   return (
     <div
       className={`notes-editor mx-auto w-full px-4 pb-32 pt-10 sm:px-12 ${
@@ -75,6 +123,42 @@ function NoteEditor({ note, onPatch, full }) {
       }`}
     >
       <style>{EDITOR_CSS}</style>
+
+      <div className="mb-2 flex items-center justify-end gap-3">
+        {msg && <span className="text-xs text-zinc-500">{msg}</span>}
+                <button
+          onClick={() => setImportOpen((o) => !o)}
+          className="rounded bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+        >
+          📥 Import markdown
+        </button>
+        <button
+          onClick={handleMakeDeck}
+          title="Turn the tables on this page into flashcards"
+          className="rounded bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+        >
+          🧠 Make flashcards
+        </button>
+      </div>
+
+            {importOpen && (
+        <div className="mb-4 space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
+          <textarea
+            value={importText}
+            onChange={(e) => setImportText(e.target.value)}
+            rows={8}
+            placeholder="Paste markdown here"
+            className="w-full resize-y rounded border border-zinc-200 bg-transparent p-2 font-mono text-xs text-zinc-800 outline-none dark:border-zinc-700 dark:text-zinc-100"
+          />
+          <button
+            onClick={handleImport}
+            className="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Import into this page
+          </button>
+        </div>
+      )}
+
       <input
         value={note.title}
         onChange={(e) => onPatch({ title: e.target.value })}
@@ -98,6 +182,7 @@ function NoteEditor({ note, onPatch, full }) {
 
 export default function Notes() {
   const [state, update] = useModuleData('notes', DEFAULTS)
+  const [flash, updateFlash] = useModuleData('flashcards', FLASH_DEFAULTS)
   const [activeId, setActiveId] = useState(null)
 
   // Is the page list visible? Remembered on this device only (not synced).
@@ -139,6 +224,47 @@ export default function Notes() {
     if (!window.confirm('Delete this page?')) return
     update((p) => ({ ...p, notes: p.notes.filter((n) => n.id !== id) }))
     setActiveId(null)
+  }
+
+  // Adds table rows as cards to this page's deck (creating the deck the first time).
+  // Rows whose question is already in the deck are skipped, but cards that have no
+  // topic yet get one from the heading above their table.
+  const makeDeck = (note, found) => {
+    const deck = (flash.decks ?? []).find((d) => d.sourceNoteId === note.id)
+    const deckId = deck?.id ?? crypto.randomUUID()
+    const byQ = new Map(
+      (flash.cards ?? []).filter((c) => c.deckId === deckId).map((c) => [c.q, c])
+    )
+
+    const fresh = []
+    const fill = new Map() // existing cards that have no topic yet
+    for (const { q, a, topic } of found) {
+      const old = byQ.get(q)
+      if (old) {
+        if (topic && !old.topic) fill.set(old.id, topic)
+        continue
+      }
+      const card = newCard(q, a, deckId, topic)
+      byQ.set(q, card)
+      fresh.push(card)
+    }
+
+    if (fresh.length || fill.size) {
+      updateFlash((p) => ({
+        ...p,
+        decks: deck
+          ? p.decks
+          : [
+              ...(p.decks ?? []),
+              { id: deckId, name: note.title || 'Untitled', sourceNoteId: note.id },
+            ],
+        cards: [
+          ...(p.cards ?? []).map((c) => (fill.has(c.id) ? { ...c, topic: fill.get(c.id) } : c)),
+          ...fresh,
+        ],
+      }))
+    }
+    return { added: fresh.length, skipped: found.length - fresh.length }
   }
 
   return (
@@ -223,6 +349,7 @@ export default function Notes() {
             key={active.id}
             note={active}
             full={!open}
+            onMakeDeck={makeDeck}
             onPatch={(p) => patchNote(active.id, p)}
           />
         ) : (
