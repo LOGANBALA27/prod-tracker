@@ -12,12 +12,12 @@ import Notes from './notes/Notes'
 import Flashcards from './flashcards/Flashcards'
 
 export const modules = [
-  { id: 'tasks', label: 'Tasks', icon: '✅', component: Tasks, wide: true },
+{ id: 'tasks', label: 'Tasks', icon: '✅', component: Tasks, wide: true },
   { id: 'habits', label: 'Habits', icon: '🔥', component: Habits },
   { id: 'reminders', label: 'Reminders', icon: '📌', component: Reminders },
   { id: 'targets', label: 'Targets', icon: '🏆', component: Targets, wide: true },
-  { id: 'notes', label: 'Notes', icon: '📓', component: Notes, wide: true },
-  { id: 'flashcards', label: 'Flashcards', icon: '🧠', component: Flashcards, wide: true },
+  { id: 'notes', label: 'Notes', icon: '📓', component: Notes, wide: true, desktopOnly: true },
+  { id: 'flashcards', label: 'Flashcards', icon: '🧠', component: Flashcards, wide: true, desktopOnly: true },
   // { id: 'today', label: 'Today', icon: '☀️', component: Today },
   // { id: 'goals', label: 'Goals', icon: '🎯', component: Goals },
   // { id: 'reflect', label: 'Reflect', icon: '📝', component: Reflect },

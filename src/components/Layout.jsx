@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './Header'
 import { useAppData } from '../data/DataContext'
 
@@ -36,6 +36,21 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
   })
 
   const { drive, connectDrive, disconnectDrive } = useAppData()
+
+  // If a desktop-only section is open on a narrow screen, switch to the first mobile-friendly one
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const check = () => {
+      const current = items.find((i) => i.id === active)
+      if (!mq.matches && current?.desktopOnly) {
+        const fallback = items.find((i) => !i.desktopOnly)
+        if (fallback) onNavigate(fallback.id)
+      }
+    }
+    check()
+    mq.addEventListener('change', check)
+    return () => mq.removeEventListener('change', check)
+  }, [active, items, onNavigate])
 
   const toggle = () => {
     const next = !collapsed
@@ -115,10 +130,13 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
         </main>
       </div>
 
+      {/* Mobile bottom nav: desktop-only sections are hidden */}
       <nav className="fixed inset-x-0 bottom-0 flex border-t border-zinc-200 bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900">
-        {items.map((i) => (
-          <NavButton key={i.id} item={i} mobile active={i.id === active} onClick={() => onNavigate(i.id)} />
-        ))}
+        {items
+          .filter((i) => !i.desktopOnly)
+          .map((i) => (
+            <NavButton key={i.id} item={i} mobile active={i.id === active} onClick={() => onNavigate(i.id)} />
+          ))}
       </nav>
     </div>
   )
