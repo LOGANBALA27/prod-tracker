@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from './Header'
 import { useAppData } from '../data/DataContext'
 
@@ -6,10 +6,10 @@ const STORAGE_KEY = 'prod-tracker:sidebar-collapsed'
 
 function NavButton({ item, active, onClick, mobile, collapsed }) {
   const shape = mobile
-  ? 'flex min-w-[4.5rem] flex-1 shrink-0 flex-col items-center gap-0.5 py-2 text-xs'
-  : `flex w-full items-center rounded-lg py-2 text-sm ${
-      collapsed ? 'justify-center' : 'gap-3 px-3 text-left'
-    }`
+    ? 'flex min-w-[4.5rem] flex-1 shrink-0 flex-col items-center gap-0.5 py-2 text-xs'
+    : `flex w-full items-center rounded-lg py-2 text-sm ${
+        collapsed ? 'justify-center' : 'gap-3 px-3 text-left'
+      }`
   const state = active
     ? 'bg-accent/10 font-semibold text-accent'
     : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
@@ -36,6 +36,15 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
   })
 
   const { drive, connectDrive, disconnectDrive } = useAppData()
+
+  const navRef = useRef(null)
+
+  // Keep the active tab visible when the mobile bar overflows
+  useEffect(() => {
+    navRef.current
+      ?.querySelector('[aria-current="page"]')
+      ?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
+  }, [active])
 
   // If a desktop-only section is open on a narrow screen, switch to the first mobile-friendly one
   useEffect(() => {
@@ -130,8 +139,11 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
         </main>
       </div>
 
-      {/* Mobile bottom nav: desktop-only sections are hidden */}
-      <nav className="fixed inset-x-0 bottom-0 flex border-t border-zinc-200 bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900">
+      {/* Mobile bottom nav: scrolls sideways when there are many modules; desktop-only sections are hidden */}
+      <nav
+        ref={navRef}
+        className="fixed inset-x-0 bottom-0 flex overflow-x-auto border-t border-zinc-200 bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {items
           .filter((i) => !i.desktopOnly)
           .map((i) => (
