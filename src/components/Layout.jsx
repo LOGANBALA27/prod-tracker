@@ -6,7 +6,7 @@ const STORAGE_KEY = 'prod-tracker:sidebar-collapsed'
 
 function NavButton({ item, active, onClick, mobile, collapsed }) {
   const shape = mobile
-    ? 'flex min-w-[4.5rem] flex-1 shrink-0 flex-col items-center gap-0.5 py-2 text-xs'
+    ? 'flex min-w-[5.5rem] flex-1 shrink-0 flex-col items-center gap-0.5 py-2 text-xs'
     : `flex w-full items-center rounded-lg py-2 text-sm ${
         collapsed ? 'justify-center' : 'gap-3 px-3 text-left'
       }`
@@ -142,7 +142,7 @@ export default function Layout({ items, active, onNavigate, wide, children }) {
       {/* Mobile bottom nav: scrolls sideways when there are many modules; desktop-only sections are hidden */}
       <nav
         ref={navRef}
-        className="fixed inset-x-0 bottom-0 flex overflow-x-auto border-t border-zinc-200 bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex touch-pan-x overflow-x-auto overscroll-x-contain border-t border-zinc-200 bg-white md:hidden dark:border-zinc-800 dark:bg-zinc-900"
       >
         {items
           .filter((i) => !i.desktopOnly)
