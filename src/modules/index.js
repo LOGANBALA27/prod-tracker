@@ -11,6 +11,7 @@ import Targets from './targets/Targets'
 import Notes from './notes/Notes'
 import Flashcards from './flashcards/Flashcards'
 import News from './news/News'
+import Playbook from './playbook/Playbook'
 
 export const modules = [
 { id: 'tasks', label: 'Tasks', icon: '✅', component: Tasks, wide: true },
@@ -20,6 +21,7 @@ export const modules = [
   { id: 'notes', label: 'Notes', icon: '📓', component: Notes, wide: true, desktopOnly: true },
   { id: 'flashcards', label: 'Flashcards', icon: '🧠', component: Flashcards, wide: true, desktopOnly: true },
   { id: 'news', label: 'News', icon: '📰', component: News, wide: true },
+  { id: 'playbook', label: 'Playbook', icon: '📖', component: Playbook },
   // { id: 'today', label: 'Today', icon: '☀️', component: Today },
   // { id: 'goals', label: 'Goals', icon: '🎯', component: Goals },
   // { id: 'reflect', label: 'Reflect', icon: '📝', component: Reflect },

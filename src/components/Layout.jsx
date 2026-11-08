@@ -6,10 +6,10 @@ const STORAGE_KEY = 'prod-tracker:sidebar-collapsed'
 
 function NavButton({ item, active, onClick, mobile, collapsed }) {
   const shape = mobile
-    ? 'flex flex-1 flex-col items-center gap-0.5 py-2 text-xs'
-    : `flex w-full items-center rounded-lg py-2 text-sm ${
-        collapsed ? 'justify-center' : 'gap-3 px-3 text-left'
-      }`
+  ? 'flex min-w-[4.5rem] flex-1 shrink-0 flex-col items-center gap-0.5 py-2 text-xs'
+  : `flex w-full items-center rounded-lg py-2 text-sm ${
+      collapsed ? 'justify-center' : 'gap-3 px-3 text-left'
+    }`
   const state = active
     ? 'bg-accent/10 font-semibold text-accent'
     : 'text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
