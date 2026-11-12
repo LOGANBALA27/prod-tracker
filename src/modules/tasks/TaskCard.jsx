@@ -55,7 +55,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
         } ${dropLine ? DROP_LINE[dropLine] : ''}`}
       >
         {/* One-tap complete circle */}
-        <button
+        {/* <button
           type="button"
           onClick={(e) => {
             e.stopPropagation()
@@ -69,7 +69,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
           }`}
         >
           {isDone && '✓'}
-        </button>
+        </button> */}
 
         <div className="min-w-0 flex-1">
           {(priority || taskTags.length > 0) && (
