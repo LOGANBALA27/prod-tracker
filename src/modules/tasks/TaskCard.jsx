@@ -85,7 +85,9 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
             </div>
           )}
 
-          <p className={`break-words ${isDone ? 'text-zinc-400 line-through' : ''}`}>{task.text}</p>
+<p className={`break-words text-[13px] leading-snug ${isDone ? 'text-zinc-400 line-through' : ''}`}>
+  {task.text}
+</p>
 
           {task.description && (
             <p className="mt-0.5 line-clamp-1 text-xs text-zinc-500">{plain(task.description)}</p>
