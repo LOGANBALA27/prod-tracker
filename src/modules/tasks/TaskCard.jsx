@@ -15,7 +15,7 @@ const DROP_LINE = {
 // Small move / remove buttons. On phones they sit at the right of the row;
 // on larger screens they float over the card's corner on hover or keyboard focus.
 const ACTIONS =
-  'flex shrink-0 items-center gap-0.5 ' +
+  'flex shrink-0 items-center ' +
   'md:absolute md:right-1.5 md:top-1.5 md:rounded-md md:bg-white md:opacity-0 md:shadow-sm ' +
   'md:group-hover:opacity-100 md:group-focus-within:opacity-100 dark:md:bg-zinc-800'
 
@@ -105,7 +105,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
         <div className={ACTIONS} onClick={(e) => e.stopPropagation()}>
           <Button
             variant="ghost"
-            className="px-1.5 py-0.5 text-zinc-400"
+            className="px-1 py-0.5 text-sm text-zinc-400"
             disabled={index === 0}
             onClick={() => onMove(COLUMNS[index - 1].id)}
             aria-label={`Move "${task.text}" to ${COLUMNS[index - 1]?.label}`}
@@ -114,7 +114,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
           </Button>
           <Button
             variant="ghost"
-            className="px-1.5 py-0.5 text-zinc-400"
+            className="px-1 py-0.5 text-sm text-zinc-400"
             disabled={index === COLUMNS.length - 1}
             onClick={() => onMove(COLUMNS[index + 1].id)}
             aria-label={`Move "${task.text}" to ${COLUMNS[index + 1]?.label}`}
@@ -123,7 +123,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
           </Button>
           <Button
             variant="ghost"
-            className="px-1.5 py-0.5"
+            className="px-1 py-0.5 text-sm"
             onClick={onRemove}
             title="Remove task"
             aria-label={`Remove "${task.text}"`}
