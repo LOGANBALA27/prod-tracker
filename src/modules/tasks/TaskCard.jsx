@@ -27,6 +27,21 @@ const plain = (html) =>
     .parseFromString(html.replace(/<\/(p|li|h\d)>/g, ' '), 'text/html')
     .body.textContent.trim()
 
+    const DAY = 86400000
+
+// Returns a red tint + left strip that gets stronger as the due date gets closer
+const urgencyStyle = (due, today, isDone) => {
+  if (!due || isDone) return undefined
+  const days = Math.round(
+    (new Date(`${due}T00:00:00`) - new Date(`${today}T00:00:00`)) / DAY
+  )
+  if (days > 7) return undefined
+  const level = days < 0 ? 1 : 1 - days / 8 // 0 = far, 1 = today or overdue
+  const hue = Math.round(48 - 48 * level) // 48 = amber, 0 = red
+  const color = `hsl(${hue}, 90%, ${days < 0 ? 40 : 50}%)`
+  return { boxShadow: `inset 4px 0 0 ${color}` }
+}
+
 export default function TaskCard({ task, status, today, tags, dropLine, onMove, onEdit, onRemove, onCreateTag }) {
   const [open, setOpen] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -42,6 +57,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
     <>
       <li
         data-task-id={task.id}
+        style={urgencyStyle(task.due, today, isDone)}
         draggable
         role="button"
         tabIndex={0}
