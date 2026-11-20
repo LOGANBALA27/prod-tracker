@@ -15,9 +15,12 @@ const DROP_LINE = {
 // Small move / remove buttons. On phones they sit at the right of the row;
 // on larger screens they float over the card's corner on hover or keyboard focus.
 const ACTIONS =
-  'flex shrink-0 items-center ' +
-  'md:absolute md:right-1.5 md:top-1.5 md:rounded-md md:bg-white md:opacity-0 md:shadow-sm ' +
-  'md:group-hover:opacity-100 md:group-focus-within:opacity-100 dark:md:bg-zinc-800'
+  'flex shrink-0 items-center gap-0.5 ' +
+  'md:absolute md:right-1.5 md:top-1.5 md:rounded-md md:border md:border-zinc-200 md:bg-white md:p-0.5 md:opacity-0 md:shadow-sm md:transition-opacity ' +
+  'md:group-hover:opacity-100 md:group-focus-within:opacity-100 dark:md:border-zinc-700 dark:md:bg-zinc-800'
+
+const ACTION_BTN =
+  'flex h-6 w-6 items-center justify-center !p-0 text-sm leading-none text-zinc-400'
 
 const plain = (html) =>
   new DOMParser()
@@ -105,7 +108,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
         <div className={ACTIONS} onClick={(e) => e.stopPropagation()}>
           <Button
             variant="ghost"
-            className="px-1 py-0.5 text-sm text-zinc-400"
+            className={ACTION_BTN}
             disabled={index === 0}
             onClick={() => onMove(COLUMNS[index - 1].id)}
             aria-label={`Move "${task.text}" to ${COLUMNS[index - 1]?.label}`}
@@ -114,7 +117,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
           </Button>
           <Button
             variant="ghost"
-            className="px-1 py-0.5 text-sm text-zinc-400"
+            className={ACTION_BTN}
             disabled={index === COLUMNS.length - 1}
             onClick={() => onMove(COLUMNS[index + 1].id)}
             aria-label={`Move "${task.text}" to ${COLUMNS[index + 1]?.label}`}
@@ -123,7 +126,7 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
           </Button>
           <Button
             variant="ghost"
-            className="px-1 py-0.5 text-sm"
+            className={ACTION_BTN}
             onClick={onRemove}
             title="Remove task"
             aria-label={`Remove "${task.text}"`}
