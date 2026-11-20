@@ -124,10 +124,15 @@ export default function TaskCard({ task, status, today, tags, dropLine, onMove, 
           >
             ›
           </Button>
+
+          <span className="mx-1.5 h-5 w-px bg-zinc-200 md:mx-0.5 md:h-4 dark:bg-zinc-700" aria-hidden="true" />
+
           <Button
             variant="ghost"
-            className={ACTION_BTN}
-            onClick={onRemove}
+            className={`${ACTION_BTN} !text-[15px] md:!text-[13px]`}
+            onClick={() => {
+              if (window.confirm(`Remove "${task.text}"?`)) onRemove()
+            }}
             title="Remove task"
             aria-label={`Remove "${task.text}"`}
           >
